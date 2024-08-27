@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+sqlalchemy
+# alembic
+pydantic
+passlib
+bcrypt
+python-jose
+# cloudinary
+opencv-python-headless
+pydantic-settings
+pydantic[email]
+python-multipart
