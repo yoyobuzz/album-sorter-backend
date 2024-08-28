@@ -40,9 +40,13 @@ def upload_photo(album_id: int, photo: PhotoUpload, user: Annotated[User, Depend
 #     # return db.query(Photo).filter(Photo.album_id == album_id).all()
 
 @router.get("/albums/{album_id}", response_model=List[PhotoUpload])
-def get_album_photos(album_id: int, password: str, db: Session = Depends(get_db)):
+def get_album_photos(album_id: int, password: str, user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_db)):
     db_album = db.query(Album).filter(Album.id == album_id).first()
     if not db_album or not verify_password(password, db_album.hashed_password):
         raise HTTPException(status_code=403, detail="Invalid password")
     
-    return db.query(Photo).filter(Photo.album_id == album_id).all() 
+    # return db.query(Photo).filter(Photo.album_id == album_id).all() 
+    photos = db.query(Photo).filter(Photo.album_id == album_id).all() 
+    photo_urls = [photo.url for photo in photos]
+    
+    return photo_urls
