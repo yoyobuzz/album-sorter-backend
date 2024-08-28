@@ -10,8 +10,9 @@ app = FastAPI()
 # Include the routes
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(albums.router, prefix="/albums", tags=["albums"])
-app.include_router(face_recog.router, prefix="/face-recognition", tags=["face_recognition"])
+# app.include_router(face_recog.router, prefix="/face-recognition", tags=["face_recognition"])
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the Album Sorter and Find My Photos API!"}
+    return {"###": "Jai Shree Ram!"}
+
