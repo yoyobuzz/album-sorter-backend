@@ -7,7 +7,7 @@ passlib
 bcrypt
 python-jose
 # cloudinary
-opencv-python-headless
+# opencv-python-headless
 pydantic-settings
 pydantic[email]
 python-multipart
