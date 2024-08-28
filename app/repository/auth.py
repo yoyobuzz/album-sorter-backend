@@ -9,12 +9,13 @@ from app.core.security import verify_password, get_password_hash
 from app.models import User
 from app.schemas import UserCreate
 from app.core.dependencies import get_db
+from typing import Annotated
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 5000
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
@@ -35,7 +36,7 @@ def authenticate_user(db: Session, email: str, password: str):
         return False
     return user
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -49,11 +50,17 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         user = get_user(db, email=email)
         if user is None:
             raise credentials_exception
+    # except: 
+    #     print("Error")
     except JWTError:
         raise credentials_exception
     return user
 
 def create_user(db: Session, user: UserCreate):
+    if(get_user(db, user.email)):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered")
     hashed_password = get_password_hash(user.password)
     db_user = User(email=user.email, hashed_password=hashed_password)
     db.add(db_user)

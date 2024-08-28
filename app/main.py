@@ -8,8 +8,8 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 # Include the routes
-app.include_router(auth.router, prefix="/auth", tags=["auth"])
-app.include_router(albums.router, prefix="/albums", tags=["albums"])
+app.include_router(auth.router, prefix="", tags=["auth"])
+app.include_router(albums.router, prefix="", tags=["albums"])
 # app.include_router(face_recog.router, prefix="/face-recognition", tags=["face_recognition"])
 
 @app.get("/")

@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from app.core.dependencies import get_db
 from app.schemas import UserCreate, UserLogin, Token
 from app.repository.auth import authenticate_user, create_access_token, create_user
+from typing import Annotated
+from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter()
 
@@ -12,9 +14,9 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
     access_token = create_access_token(data={"sub": db_user.email})
     return {"access_token": access_token, "token_type": "bearer"}
 
-@router.post("/login", response_model=Token)
-def login(user: UserLogin, db: Session = Depends(get_db)):
-    db_user = authenticate_user(db, user.email, user.password)
+@router.post("/token", response_model=Token)
+async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Session = Depends(get_db)):
+    db_user = authenticate_user(db, form_data.username, form_data.password)
     if not db_user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
