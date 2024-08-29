@@ -4,10 +4,12 @@ pydantic
 passlib
 bcrypt==4.0.1
 python-jose
-# cloudinary
-# opencv-python-headless
+opencv-python-headless
 pydantic-settings
 pydantic[email]
 python-multipart
 motor 
 pymongo
+facenet-pytorch
+numpy
+torch
