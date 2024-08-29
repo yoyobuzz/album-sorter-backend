@@ -28,8 +28,9 @@
 #     return {"###": "Jai Shree Ram!"}
 
 from app.main import app
-
+from app.core.config import Settings
 if __name__ == '__main__':
+    print(Settings.MONGODB_URI)
     import uvicorn
     # uvicorn.run(app)
     uvicorn.run("app", host="0.0.0.0", port=8000, reload=True)
