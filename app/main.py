@@ -1,10 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import auth, albums, face_recog
-from app.core.database import Base, engine
+from app.core.database import get_db
+
 
 # Initialize the database tables
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -25,3 +26,8 @@ app.include_router(albums.router, prefix="", tags=["albums"])
 @app.get("/")
 def read_root():
     return {"###": "Jai Shree Ram!"}
+
+@app.post("/test")
+async def test(test: str, db=Depends(get_db)):
+    await db.test.insert_one({"test": test})
+    return {"message": "Test successful!"}

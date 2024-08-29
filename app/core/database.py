@@ -1,21 +1,12 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from motor.motor_asyncio import AsyncIOMotorClient
 from app.core.config import settings
 
-# Database engine
-engine = create_engine(settings.SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+# Create the MongoDB client
+client = AsyncIOMotorClient(settings.MONGODB_URI)
 
-# SessionLocal will be used to create a session
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Access the database
+db = client[settings.MONGODB_DB_NAME]
 
-# Base class for models
-Base = declarative_base()
-
-# Dependency to get DB session
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# Dependency to get the database
+async def get_db():
+    return db

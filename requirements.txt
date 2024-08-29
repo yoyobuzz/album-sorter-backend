@@ -1,7 +1,5 @@
 fastapi
 uvicorn
-sqlalchemy
-# alembic
 pydantic
 passlib
 bcrypt
@@ -11,3 +9,5 @@ python-jose
 pydantic-settings
 pydantic[email]
 python-multipart
+motor 
+pymongo
