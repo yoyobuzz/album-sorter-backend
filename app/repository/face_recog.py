@@ -141,47 +141,93 @@ def extract_face_encoding(image) -> Optional[Face]:
 
     return None
 
+# # Function to find the nearest cluster for a given encoding
+# def find_nearest_cluster(input_encoding: List[float], clusters: List[Cluster]) -> Optional[Cluster]:
+#     min_distance = float('inf')
+#     nearest_cluster = None
+
+#     # Iterate over each cluster
+#     for cluster in clusters:
+#         cluster_centre = np.array(cluster.cluster_centre)
+
+#         # Calculate the distance (cosine similarity) between the input encoding and the cluster center
+#         similarity = cosine_similarity([input_encoding], [cluster_centre])[0][0]
+#         distance = 1 - similarity  # Convert similarity to distance
+
+#         # If this distance is smaller, update the nearest cluster
+#         if distance < min_distance:
+#             min_distance = distance
+#             nearest_cluster = cluster
+
+#     return nearest_cluster
+
+# # Function to search for similar photos within the clusters
+# def search_photos(query_embedding: List[float], clusters: List[Cluster], similarity_threshold = 0.5) -> List[str]:
+#     nearest_cluster = find_nearest_cluster(query_embedding, clusters)
+#     similar_image_urls = set()  # Use a set to store unique URLs
+
+#     if nearest_cluster is not None:
+#         print("Searching for similar faces in the nearest cluster:")
+
+#         # Convert the query embedding to a 2D array for cosine similarity calculation
+#         query_embedding = np.array(query_embedding).reshape(1, -1)
+
+#         for face_image in nearest_cluster.face_images:
+#             encoding = np.array(face_image.embedding).reshape(1, -1)
+#             image_url = face_image.url
+
+#             # Calculate cosine similarity
+#             similarity = cosine_similarity(query_embedding, encoding)[0][0]
+
+#             # Check if the similarity is greater than 50%
+#             if similarity > similarity_threshold:
+#                 similar_image_urls.add(image_url)
+
+#     else:
+#         print("No similar faces found.")
+
+#     return list(similar_image_urls)
+
+
+
 # Function to find the nearest cluster for a given encoding
-def find_nearest_cluster(input_encoding: List[float], clusters: List[Cluster]) -> Optional[Cluster]:
-    min_distance = float('inf')
-    nearest_cluster = None
+def find_similar_clusters(input_encoding: List[float], clusters: List[Cluster], threshold: float = 0.5) -> List[Cluster]:
+    similar_clusters = []
 
     # Iterate over each cluster
     for cluster in clusters:
         cluster_centre = np.array(cluster.cluster_centre)
 
-        # Calculate the distance (cosine similarity) between the input encoding and the cluster center
+        # Calculate the similarity between the input encoding and the cluster center
         similarity = cosine_similarity([input_encoding], [cluster_centre])[0][0]
-        distance = 1 - similarity  # Convert similarity to distance
 
-        # If this distance is smaller, update the nearest cluster
-        if distance < min_distance:
-            min_distance = distance
-            nearest_cluster = cluster
+        # If the similarity is above the threshold, add the cluster to the list
+        if similarity >= threshold:
+            similar_clusters.append(cluster)
 
-    return nearest_cluster
+    return similar_clusters
 
-# Function to search for similar photos within the clusters
-def search_photos(query_embedding: List[float], clusters: List[Cluster]) -> List[str]:
-    nearest_cluster = find_nearest_cluster(query_embedding, clusters)
+
+def search_photos(query_embedding: List[float], clusters: List[Cluster], similarity_threshold: float = 0.5) -> List[str]:
+    similar_clusters = find_similar_clusters(query_embedding, clusters)
     similar_image_urls = set()  # Use a set to store unique URLs
 
-    if nearest_cluster is not None:
-        print("Searching for similar faces in the nearest cluster:")
-
+    if similar_clusters:
         # Convert the query embedding to a 2D array for cosine similarity calculation
         query_embedding = np.array(query_embedding).reshape(1, -1)
 
-        for face_image in nearest_cluster.face_images:
-            encoding = np.array(face_image.embedding).reshape(1, -1)
-            image_url = face_image.url
+        for cluster in similar_clusters:
 
-            # Calculate cosine similarity
-            similarity = cosine_similarity(query_embedding, encoding)[0][0]
+            for face_image in cluster.face_images:
+                encoding = np.array(face_image.embedding).reshape(1, -1)
+                image_url = face_image.url
 
-            # Check if the similarity is greater than 50%
-            if similarity > 0.5:
-                similar_image_urls.add(image_url)
+                # Calculate cosine similarity
+                similarity = cosine_similarity(query_embedding, encoding)[0][0]
+
+                # Check if the similarity is greater than the threshold
+                if similarity > similarity_threshold:
+                    similar_image_urls.add(image_url)
 
     else:
         print("No similar faces found.")
