@@ -53,20 +53,44 @@ async def upload_photos(
     db_album = await db["albums"].find_one({"_id": ObjectId(album_id), "user_ids": str(user.id)})
     if not db_album:
         raise HTTPException(status_code=404, detail="Album not found")
+
     # Update the album with new photo URLs
     await db["albums"].update_one(
         {"_id": ObjectId(album_id)},
         {"$push": {"image_urls": {"$each": photos_urls}}}
     )
-    # Process the images to generate clusters
-    clusters = process_urls(photos_urls)
-    # Convert clusters to dict format for MongoDB, excluding 'id' if needed
-    cluster_dicts = [cluster.model_dump(by_alias=True) for cluster in clusters]
-    # Add the clusters to the album in MongoDB
-    await db["albums"].update_one(
-        {"_id": ObjectId(album_id)},
-        {"$push": {"clusters": {"$each": cluster_dicts}}}
-    )
+
+    # Load existing clusters from the album
+    clusters_old = [Cluster(**cluster) for cluster in db_album.get("clusters", [])]
+
+    # Process the new photo URLs to generate or update clusters
+    clusters_modified = process_urls(photos_urls, clusters_old)
+
+    # Update existing clusters or add new clusters
+    for modified_cluster in clusters_modified:
+        cluster_dict = modified_cluster.model_dump(by_alias=True)
+
+        if modified_cluster.id:
+            # Try to update an existing cluster
+            result = await db["albums"].update_one(
+                {"_id": ObjectId(album_id), "clusters._id": ObjectId(modified_cluster.id)},
+                {"$set": {"clusters.$": cluster_dict}}
+            )
+            if result.matched_count == 0:
+                # If no cluster was updated, it means the cluster does not exist, so insert it
+                await db["albums"].update_one(
+                    {"_id": ObjectId(album_id)},
+                    {"$push": {"clusters": cluster_dict}}
+                )
+        else:
+            # If the cluster does not have an ID, it is new and needs to be inserted
+            modified_cluster.id = str(ObjectId())  # Generate a new ObjectId for the new cluster
+            cluster_dict = modified_cluster.model_dump(by_alias=True)
+            await db["albums"].update_one(
+                {"_id": ObjectId(album_id)},
+                {"$push": {"clusters": cluster_dict}}
+            )
+
     return photos_urls
 
 # Get all photos in an album by album ID

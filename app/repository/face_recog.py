@@ -68,8 +68,8 @@ def process_images_from_urls(image_urls: List[str]) -> List[FaceCreate]:
     return faces
 
 # Function to cluster faces based on similarity
-def cluster_faces(faces: List[FaceCreate], similarity_threshold=0.6) -> List[Cluster]:
-    clusters = []
+def cluster_faces(faces: List[FaceCreate], clusters: List[Cluster], similarity_threshold: float = 0.6) -> List[Cluster]:
+    modified_cluster_id = set()
 
     for face in faces:
         encoding = np.array(face.embedding)
@@ -86,23 +86,31 @@ def cluster_faces(faces: List[FaceCreate], similarity_threshold=0.6) -> List[Clu
 
         if max_similarity > similarity_threshold and best_cluster_index is not None:
             best_cluster = clusters[best_cluster_index]
-            best_cluster.face_images.append(Face(embedding=face.embedding, url=face.url))
+            best_cluster.face_images.append(Face(id=str(ObjectId()), embedding=face.embedding, url=face.url))
             n = len(best_cluster.face_images)
-            updated_center = (encoding + cluster_center * (n - 1)) / n
+            updated_center = (encoding + np.array(best_cluster.cluster_centre) * (n - 1)) / n
             best_cluster.cluster_centre = updated_center.tolist()
+            modified_cluster_id.add(best_cluster.id)
         else:
             new_cluster = Cluster(
                 id=str(ObjectId()),
                 cluster_centre=face.embedding,
-                face_images=[Face(id=str(ObjectId()),embedding=face.embedding, url=face.url)]
+                face_images=[Face(id=str(ObjectId()), embedding=face.embedding, url=face.url)]
             )
             clusters.append(new_cluster)
-    return clusters
+            modified_cluster_id.add(new_cluster.id)  # Use the new cluster's ID here
+
+    modified_clusters = []
+    for cluster in clusters:
+        if cluster.id in modified_cluster_id:  # Correctly check if the cluster's ID is in the modified set
+            modified_clusters.append(cluster)
+
+    return modified_clusters
 
 # Main execution function
-def process_urls(image_urls: List[str]) -> List[Cluster]:
+def process_urls(image_urls: List[str], clusters: List[Cluster]) -> List[Cluster]:
     faces = process_images_from_urls(image_urls)
-    clusters = cluster_faces(faces)
+    clusters = cluster_faces(faces, clusters)
     return clusters
 
 

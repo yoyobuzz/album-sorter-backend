@@ -82,8 +82,6 @@ class Album(BaseModel):
 
 class AlbumCreate(BaseModel):
     album_name: str  # Name of the album
-    image_urls: Optional[List[str]] = []  # List of URLs of all images in the album
-    clusters: Optional[List[Cluster]] = []
     password: str  # Plaintext password for the album (will be hashed)
 
     class Config:
