@@ -27,7 +27,7 @@
 # def read_root():
 #     return {"###": "Jai Shree Ram!"}
 
-# from app.main import app
+from app.main import app
 
 if __name__ == '__main__':
     import uvicorn
