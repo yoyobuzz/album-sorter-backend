@@ -10,16 +10,6 @@ from app.repository.face_recog import process_urls
 
 router = APIRouter()
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import Annotated
-from bson import ObjectId
-from app.core.database import get_db
-from app.repository.auth import get_current_user
-from app.schemas import Album, User, AlbumCreate
-from app.core.security import get_password_hash
-
-router = APIRouter()
-
 # Create a new album and add it to the user's list of albums
 @router.post("/albums", response_model=Album)
 async def create_album(
