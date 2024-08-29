@@ -7,7 +7,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 5000
 
     # MongoDB Configuration
-    MONGODB_URI: str = "mongodb+srv://albumsorter:albumsorter@albumsorter.jnncj.mongodb.net/?retryWrites=true&w=majority&appName=albumsorter"
+    MONGODB_URI: str
+    # MONGODB_URI: str = "mongodb+srv://albumsorter:albumsorter@albumsorter.jnncj.mongodb.net/?retryWrites=true&w=majority&appName=albumsorter"
     MONGODB_DB_NAME: str = "albumsorter"
 
     class Config:
