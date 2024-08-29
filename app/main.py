@@ -26,8 +26,3 @@ app.include_router(albums.router, prefix="", tags=["albums"])
 @app.get("/")
 def read_root():
     return {"Jai Shree Ram!": "Jai Shree Ram!"}
-
-@app.post("/test")
-async def test(test: str, db=Depends(get_db)):
-    await db.test.insert_one({"test": test})
-    return {"message": "Test successful!"}

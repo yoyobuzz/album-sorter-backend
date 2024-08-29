@@ -30,7 +30,7 @@ class Token(BaseModel):
     token_type: str
 
 # Image Schemas
-class Image(BaseModel):
+class Face(BaseModel):
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
     embedding: List[float]  # Vector of 128 floats
     url: str
@@ -40,7 +40,8 @@ class Image(BaseModel):
         json_encoders = {ObjectId: str}
         populate_by_name  = True
 
-class ImageCreate(BaseModel):
+class FaceCreate(BaseModel):
+    embedding: List[float]
     url: str
     class Config:
         arbitrary_types_allowed = True
@@ -50,7 +51,7 @@ class ImageCreate(BaseModel):
 class Cluster(BaseModel):
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
     cluster_centre: List[float]  # Vector of 128 floats
-    face_images: List[Image] = []
+    face_images: List[Face] = []
 
     class Config:
         arbitrary_types_allowed = True
@@ -59,7 +60,7 @@ class Cluster(BaseModel):
 
 class ClusterCreate(BaseModel):   
     cluster_centre: List[float]  # Vector of 128 floats
-    face_images: List[Image] = []
+    face_images: List[Face] = []
 
     class Config:
         arbitrary_types_allowed = True

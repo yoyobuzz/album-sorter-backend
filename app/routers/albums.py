@@ -3,8 +3,10 @@ from typing import List, Annotated
 from bson import ObjectId
 from app.core.database import get_db
 from app.repository.auth import get_current_user
-from app.schemas import Album, User, Image, ImageCreate, AlbumCreate
+from app.schemas import Album, User, Face, FaceCreate, AlbumCreate, ClusterCreate, Cluster
 from app.core.security import get_password_hash, verify_password
+from app.repository.face_recog import process_urls
+
 
 router = APIRouter()
 
@@ -49,7 +51,7 @@ async def create_album(
     )
     return album_data
 
-# Upload multiple photos to an album
+# Upload multiple photos to an album and add clusters to the album
 @router.post("/albums/{album_id}/upload", response_model=List[str])
 async def upload_photos(
     album_id: str, 
@@ -57,14 +59,23 @@ async def upload_photos(
     user: Annotated[User, Depends(get_current_user)], 
     db = Depends(get_db)
 ):
+    # Find the album and ensure the user has access
     db_album = await db["albums"].find_one({"_id": ObjectId(album_id), "user_ids": str(user.id)})
     if not db_album:
         raise HTTPException(status_code=404, detail="Album not found")
-
-    # photo_urls = [photo.url for photo in photos]
+    # Update the album with new photo URLs
     await db["albums"].update_one(
         {"_id": ObjectId(album_id)},
         {"$push": {"image_urls": {"$each": photos_urls}}}
+    )
+    # Process the images to generate clusters
+    clusters = process_urls(photos_urls)
+    # Convert clusters to dict format for MongoDB, excluding 'id' if needed
+    cluster_dicts = [cluster.model_dump(by_alias=True) for cluster in clusters]
+    # Add the clusters to the album in MongoDB
+    await db["albums"].update_one(
+        {"_id": ObjectId(album_id)},
+        {"$push": {"clusters": {"$each": cluster_dicts}}}
     )
     return photos_urls
 

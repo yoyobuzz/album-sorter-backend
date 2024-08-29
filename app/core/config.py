@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     class Config:
         case_sensitive = True
-        # env_file = ".env"  # Optional: Load environment variables from a .env file
+        env_file = ".env"  # Optional: Load environment variables from a .env file
 
 # Create the settings instance
 settings = Settings()

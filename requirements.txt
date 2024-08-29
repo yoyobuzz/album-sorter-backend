@@ -13,3 +13,4 @@ pymongo
 facenet-pytorch
 numpy
 torch
+requests
