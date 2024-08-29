@@ -8,12 +8,12 @@ class Settings(BaseSettings):
 
     # MongoDB Configuration
     MONGODB_URI: str
-    # MONGODB_URI: str = "mongodb+srv://albumsorter:albumsorter@albumsorter.jnncj.mongodb.net/?retryWrites=true&w=majority&appName=albumsorter"
+    MONGODB_URI: str = "mongodb+srv://albumsorter:albumsorter@albumsorter.jnncj.mongodb.net/?retryWrites=true&w=majority&appName=albumsorter"
     MONGODB_DB_NAME: str = "albumsorter"
 
     class Config:
         case_sensitive = True
-        env_file = ".env"  # Optional: Load environment variables from a .env file
+        # env_file = ".env"  # Optional: Load environment variables from a .env file
 
 # Create the settings instance
 settings = Settings()
