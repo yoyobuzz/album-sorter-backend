@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import auth, albums, face_recog
 from app.core.database import get_db
-
+from app.core.config import settings
 
 # Initialize the database tables
 # Base.metadata.create_all(bind=engine)
@@ -25,7 +25,7 @@ app.include_router(albums.router, prefix="", tags=["albums"])
 
 @app.get("/")
 def read_root():
-    return {"###": "Jai Shree Ram!"}
+    return {"###": settings.MONGODB_URI}
 
 @app.post("/test")
 async def test(test: str, db=Depends(get_db)):
