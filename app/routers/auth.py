@@ -4,8 +4,9 @@ from pymongo.collection import Collection
 from typing import Annotated
 
 from app.core.database import get_db
-from app.schemas import UserCreate, Token
+from app.schemas import UserCreate, Token, User
 from app.repository.auth import authenticate_user, create_access_token, create_user
+from app.repository.auth import get_current_user
 
 router = APIRouter()
 
@@ -31,3 +32,10 @@ async def login(
         )
     access_token = create_access_token(data={"sub": db_user.email})
     return {"access_token": access_token, "token_type": "bearer"}
+
+# Validate token
+@router.get("/valid/", response_model=str)
+async def validate(
+    user: Annotated[User, Depends(get_current_user)]
+):
+    return "Valid"

@@ -24,8 +24,8 @@ async def create_album(
     album_data = Album(
         album_name=album.album_name,
         user_ids=[str(current_user.id)],  # Automatically add the current user's ID
-        image_urls=album.image_urls,
-        clusters=album.clusters,
+        # image_urls=album.image_urls,
+        # clusters=album.clusters,
         password=hashed_password
     )
     
