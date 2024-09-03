@@ -2,9 +2,10 @@ from pydantic import BaseModel, EmailStr, Field, BeforeValidator
 from typing import List, Optional, Annotated
 from bson import ObjectId
 
+# Custom type for BSON ObjectId
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
-# Auth Schemas
+# User Schema
 class User(BaseModel):
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
     email: EmailStr
@@ -14,8 +15,9 @@ class User(BaseModel):
     class Config:
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
-        populate_by_name  = True  # This allows using 'id' instead of '_id'
+        populate_by_name = True
 
+# User Creation Schema
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
@@ -24,65 +26,80 @@ class UserCreate(BaseModel):
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
 
-# Token Schemas
+# Token Schema
 class Token(BaseModel):
     access_token: str
     token_type: str
 
-# Image Schemas
+# Face Schema
 class Face(BaseModel):
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
-    embedding: List[float]  # Vector of 128 floats
-    url: str
-
-    class Config:
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-        populate_by_name  = True
-
-class FaceCreate(BaseModel):
     embedding: List[float]
     url: str
-    class Config:
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-
-# Cluster Schemas
-class Cluster(BaseModel):
-    id: Optional[PyObjectId] = Field(alias="_id", default=None)
-    cluster_centre: List[float]  # Vector of 128 floats
-    face_images: List[Face] = []
-
-    class Config:
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-        populate_by_name  = True
-
-class ClusterCreate(BaseModel):   
-    cluster_centre: List[float]  # Vector of 128 floats
-    face_images: List[Face] = []
-
-    class Config:
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-
-# Album Schemas
-class Album(BaseModel):
-    id: Optional[PyObjectId] = Field(alias="_id", default=None)
-    album_name: str  # Name of the album
-    user_ids: List[str] = []  # List of user IDs associated with the album
-    image_urls: List[str] = []  # List of URLs of all images in the album
-    clusters: List[Cluster] = []
-    password: str  # Hashed password for the album
 
     class Config:
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
         populate_by_name = True
 
+# Face Creation Schema
+class FaceCreate(BaseModel):
+    embedding: List[float]
+    url: str
+
+    class Config:
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+
+# Cluster Schema
+class Cluster(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    cluster_centre: List[float]
+    face_images: List[Face] = []
+
+    class Config:
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+        populate_by_name = True
+
+# Cluster Creation Schema
+class ClusterCreate(BaseModel):
+    cluster_centre: List[float]
+    face_images: List[Face] = []
+
+    class Config:
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+
+# Album Schema
+class Album(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    album_name: str
+    user_ids: List[str] = []
+    image_urls: List[str] = []
+    clusters: List[Cluster] = []
+    password: str
+
+    class Config:
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+        populate_by_name = True
+
+# Album Response Schema
+class AlbumResponse(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    album_name: str
+    user_ids: List[str] = []
+
+    class Config:
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+        populate_by_name = True
+
+# Album Creation Schema
 class AlbumCreate(BaseModel):
-    album_name: str  # Name of the album
-    password: str  # Plaintext password for the album (will be hashed)
+    album_name: str
+    password: str
 
     class Config:
         arbitrary_types_allowed = True

@@ -1,12 +1,12 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.core.config import settings
 
-# Create the MongoDB client
+# Create MongoDB client and access the database
 client = AsyncIOMotorClient(settings.MONGODB_URI)
-
-# Access the database
 db = client[settings.MONGODB_DB_NAME]
 
-# Dependency to get the database
 async def get_db():
+    """
+    Dependency that provides a MongoDB database session.
+    """
     return db

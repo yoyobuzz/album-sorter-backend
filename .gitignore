@@ -1,5 +1,6 @@
 album-sorter
 .env
+vercel.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -6,7 +6,7 @@ from pymongo.collection import Collection
 from app.core.config import settings
 from app.core.security import verify_password, get_password_hash
 from app.schemas import User, UserCreate
-from app.core.database import get_db  # Now returns a MongoDB client session
+from app.core.database import get_db
 from typing import Annotated
 from bson.objectid import ObjectId
 
@@ -16,33 +16,35 @@ SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
-# Create an access token with JWT
 def create_access_token(data: dict, expires_delta: timedelta = None):
+    """
+    Generate a JWT access token with an optional expiration.
+    """
     to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-# Get a user by email from the MongoDB
 async def get_user(db: Collection, email: str) -> User:
+    """
+    Retrieve a user from the database by email.
+    """
     user_data = await db["users"].find_one({"email": email})
-    if user_data:
-        return User(**user_data)
-    return None
+    return User(**user_data) if user_data else None
 
-# Authenticate the user by checking the email and password
 async def authenticate_user(db: Collection, email: str, password: str):
+    """
+    Verify the user's credentials.
+    """
     user = await get_user(db, email)
     if not user or not verify_password(password, user.password):
         return False
     return user
 
-# Get the current user by verifying the JWT token
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Collection = Depends(get_db)) -> User:
+    """
+    Validate the JWT token and return the current user.
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -60,10 +62,11 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Co
         raise credentials_exception
     return user
 
-# Create a new user and store it in MongoDB
 async def create_user(db: Collection, user: UserCreate) -> User:
-    existing_user = await get_user(db, user.email)
-    if existing_user:
+    """
+    Register a new user in the database.
+    """
+    if await get_user(db, user.email):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"

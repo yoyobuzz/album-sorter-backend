@@ -10,19 +10,23 @@ from app.repository.auth import get_current_user
 
 router = APIRouter()
 
-# User signup endpoint
 @router.post("/signup", response_model=Token)
 async def signup(user: UserCreate, db: Collection = Depends(get_db)):
+    """
+    Register a new user and return an access token.
+    """
     db_user = await create_user(db, user)
     access_token = create_access_token(data={"sub": db_user.email})
     return {"access_token": access_token, "token_type": "bearer"}
 
-# User login/token generation endpoint
 @router.post("/token", response_model=Token)
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Collection = Depends(get_db)
 ):
+    """
+    Authenticate user and return an access token.
+    """
     db_user = await authenticate_user(db, form_data.username, form_data.password)
     if not db_user:
         raise HTTPException(
@@ -33,9 +37,11 @@ async def login(
     access_token = create_access_token(data={"sub": db_user.email})
     return {"access_token": access_token, "token_type": "bearer"}
 
-# Validate token
 @router.get("/valid/", response_model=str)
 async def validate(
     user: Annotated[User, Depends(get_current_user)]
 ):
+    """
+    Validate the access token.
+    """
     return "Valid"
